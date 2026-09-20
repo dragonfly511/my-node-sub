@@ -1,0 +1,42 @@
+name: Generate Subscription
+
+on:
+  push:
+    paths:
+      - "nodes.txt"
+      - "convert.py"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Convert nodes
+        run: python convert.py
+
+      - name: Save subscription
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add subscription.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Update subscription"
+            git push
+          fi
